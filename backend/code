@@ -79,7 +79,7 @@ def analyze_comments():
     # Get the request data from frontend
     data = request.json
     video_url = data.get('video_url')
-    api_key = "AIzaSyBmAUZYqJO8km980mXdpYyPTsJQes1goDo"
+    api_key = ""
 
     # Extract video ID from YouTube URL
     video_id = video_url.split("v=")[-1]
