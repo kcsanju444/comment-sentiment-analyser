@@ -1,0 +1,47 @@
+.Navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  border-bottom: 1px solid #ddd;
+}
+
+.Navbar-logo {
+  height: 50px;
+}
+
+.Navbar-title {
+  font-family: "Montserrat", sans-serif;
+  color: #007bff;
+  margin: 0;
+}
+
+.Navbar-profile {
+  height: 50px;
+  border-radius: 50%;
+}
+
+/* Navbar.css */
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.z-50 {
+  z-index: 50;
+}
+
+.bg-minty {
+  background-color: #e0f2f1; /* Adjust to your color */
+}
+
+.text-tealish {
+  color: #00796b; /* Adjust to your color */
+}
+
+.font-montserrat {
+  font-family: "Montserrat", sans-serif;
+}

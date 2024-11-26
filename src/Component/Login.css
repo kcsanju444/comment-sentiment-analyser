@@ -1,0 +1,106 @@
+/* Container to center the login box */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background-color: #e9ecef;
+  padding: 20px;
+}
+
+/* The login box with padding, border, and shadow */
+.login-box {
+  width: 100%;
+  max-width: 400px;
+  padding: 30px;
+  margin-top: 40px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Title with theme styling */
+.login-title {
+  font-family: "Montserrat", sans-serif;
+  color: #007bff;
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 24px;
+}
+
+/* Form layout */
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Form group for spacing */
+.form-group {
+  margin-bottom: 20px;
+}
+
+/* Label styling */
+.form-label {
+  font-family: "Montserrat", sans-serif;
+  margin-bottom: 8px;
+  color: #495057;
+  font-size: 14px;
+}
+
+/* Input styling with border-radius and padding */
+.form-input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+/* Change border color on focus */
+.form-input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+/* Button with hover effect */
+.form-button {
+  padding: 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Button hover state */
+.form-button:hover {
+  background-color: #0056b3;
+  box-shadow: 0 4px 8px rgba(0, 91, 187, 0.4);
+}
+
+/* Footer text */
+.login-footer {
+  text-align: center;
+  margin-top: 20px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  color: #6c757d;
+}
+
+/* Signup link */
+.signup-link {
+  color: #007bff;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+/* Hover state for signup link */
+.signup-link:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
