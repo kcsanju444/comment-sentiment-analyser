@@ -1,0 +1,18 @@
+
+.home-container{
+    display: flex;
+}
+  .home-container img{
+   
+    background-size: cover; /* Ensures the image covers the entire area */
+    background-position: center center; /* Ensures the image is centered */
+    background-attachment: fixed; /* Optional: Makes the image stay fixed when scrolling */
+    height: 100vh; /* Full viewport height */
+    width: 100%; /* Full width of the screen */
+    margin: 0; /* Removes any default margin */
+  }
+ .overlay-containe input{
+
+    width: 20%;
+    margin-top: 50%;
+ }

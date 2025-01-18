@@ -25,7 +25,7 @@ const Login = () => {
         setMessage("Login successful!");
         setError("");
         setUser({ email }); // Set the logged-in user
-        navigate("/"); // Redirect to home page
+        navigate("/commentanalyzer"); // Redirect to home page
       }
     } catch (error) {
       setError("Invalid email or password. Please try again.");
@@ -80,7 +80,7 @@ const Login = () => {
           )}
           <button
             type="submit"
-            className="w-full p-3 bg-tealish text-white rounded-md hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            className="w-full p-3 bg-[rgb(202,0,42)] text-white rounded-md hover:green-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
           >
             Login
           </button>
@@ -89,7 +89,7 @@ const Login = () => {
           Don't have an account?{" "}
           <Link
             to="/signup"
-            className="text-blue-500 hover:text-blue-600 hover:underline"
+            className="text-[rgb(202,0,42)] hover:text-green-500   hover:underline"
           >
             Signup
           </Link>

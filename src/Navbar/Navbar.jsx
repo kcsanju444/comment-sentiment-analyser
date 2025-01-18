@@ -3,7 +3,7 @@ import { CgProfile } from "react-icons/cg";
 import { Link } from "react-router-dom";
 import { useAuth } from "./../AuthContext"; // Import your AuthContext
 import "./Navbar.css";
-import Logo from "../Assets/logo-no-bg.png";
+import Logo from "../assets/mlogo.png";
 
 function Navbar() {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
@@ -19,9 +19,13 @@ function Navbar() {
 
   return (
     <div className="flex justify-between items-center bg-slate-50 border-b border-gray-300 p-4 sticky top-0 z-50">
-      <Link to="/">
-        <img src={Logo} className="h-14" alt="logo" />
-      </Link>
+      {/* Logo linking to HomeScreen */}
+      <nav>
+        <Link to="/"> {/* Static route path */}
+          <img src={Logo} className="h-14" alt="logo" />
+        </Link>
+      </nav>
+
       <h1 className="font-montserrat text-tealish text-xl"></h1>
       {(user || admin) && (
         <>
@@ -60,7 +64,10 @@ function Navbar() {
           }
           className="text-tealish"
         >
-          <button className="bg-green-500 text-white rounded hover:bg-green-600 px-4 py-2">
+          <button
+            className="bg-green-500 text-white rounded hover:bg-green-600 px-4 py-2"
+            style={{ backgroundColor: "#CA002A" }}
+          >
             Login
           </button>
         </Link>

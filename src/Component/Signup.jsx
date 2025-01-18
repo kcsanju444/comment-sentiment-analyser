@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-
+import signup from "../assets/signup.png"
 const Signup = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -31,6 +31,7 @@ const Signup = () => {
   };
 
   return (
+    
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-5">
       <h2 className="text-2xl font-montserrat text-blue-500 mb-6">Signup</h2>
       <form
@@ -94,7 +95,7 @@ const Signup = () => {
         )}
         <button
           type="submit"
-          className="w-full p-3 bg-tealish text-white rounded-md hhover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+          className="w-full p-3 bg-[rgb(202,0,42)] text-white rounded-md hhover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
         >
           Signup
         </button>
@@ -102,7 +103,7 @@ const Signup = () => {
           Already have an account?{" "}
           <Link
             to="/login"
-            className="text-blue-500 hover:text-blue-600 hover:underline"
+            className="text-[rgb(202,0,42)] hover:text-green-500 hover:underline"
           >
             Login
           </Link>
