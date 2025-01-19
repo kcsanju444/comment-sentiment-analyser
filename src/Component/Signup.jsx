@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
-import signup from "../assets/signup.png"
+import { Link, useNavigate } from "react-router-dom";
+
 const Signup = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -25,7 +25,6 @@ const Signup = () => {
       }
     } catch (error) {
       setError("Registration failed. Please check your details.");
-      console.error("Error registering user:", error);
       setMessage("");
     }
   };

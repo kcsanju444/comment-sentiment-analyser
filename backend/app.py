@@ -10,13 +10,14 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from auth import auth  # Import the auth blueprint
 from models import db  # Import db from models.py
+import os
 
 # Initialize Flask app and allow CORS
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 
 # App configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/comment-analyser'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://user:12345@localhost/comment-analyser'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize SQLAlchemy with the app
@@ -28,9 +29,11 @@ app.register_blueprint(auth)
 # Load the trained sentiment analysis model
 model_pipeline = joblib.load('sentiment_model.pkl')
 
-# Download NLTK stopwords and lemmatizer if needed
-nltk.download('stopwords')
-nltk.download('wordnet')
+# Pre-download NLTK resources if not already available
+nltk_data_dir = os.path.expanduser('~') + '/nltk_data'
+if not os.path.exists(nltk_data_dir):
+    nltk.download('stopwords')
+    nltk.download('wordnet')
 
 # Load stopwords and lemmatizer
 stop_words = set(stopwords.words('english'))
@@ -73,42 +76,62 @@ def fetch_youtube_comments(video_id, api_key):
 
     return comments
 
+# Route for base URL
+@app.route('/')
+def index():
+    return "API for YouTube Comment Analysis is running."
+
 # Route for receiving the video URL and processing the comments
 @app.route('/api/comments', methods=['POST'])
 def analyze_comments():
-    # Get the request data from frontend
-    data = request.json
-    video_url = data.get('video_url')
-    api_key = "AIzaSyBkDOktgIzT58-ti6246wit8elBOpt2kR4"  # Replace with your API key
+    try:
+        # Get the request data from frontend
+        data = request.json
+        video_url = data.get('video_url')
+        if not video_url:
+            return jsonify({"error": "No video URL provided"}), 400
 
-    # Extract video ID from YouTube URL
-    video_id = video_url.split("v=")[-1]
+        api_key = "AIzaSyBkDOktgIzT58-ti6246wit8elBOpt2kR4"  # Replace with your API key
 
-    # Fetch comments using YouTube Data API
-    comments = fetch_youtube_comments(video_id, api_key)
+        # Extract video ID from YouTube URL
+        video_id = video_url.split("v=")[-1]
 
-    # Preprocess the comments
-    cleaned_comments = [preprocess_text(comment) for comment in comments]
+        # Fetch comments using YouTube Data API
+        comments = fetch_youtube_comments(video_id, api_key)
+        if not comments:
+            return jsonify({"error": "No comments found"}), 404
 
-    # Convert the cleaned comments into a DataFrame for analysis
-    df = pd.DataFrame(cleaned_comments, columns=['Cleaned_Comment'])
+        # Preprocess the comments
+        cleaned_comments = [preprocess_text(comment) for comment in comments]
 
-    # Analyze the comments using the pre-trained model and get probabilities
-    probabilities = model_pipeline.predict_proba(df['Cleaned_Comment'])  # Get prediction probabilities
+        # Convert the cleaned comments into a DataFrame for analysis
+        df = pd.DataFrame(cleaned_comments, columns=['Cleaned_Comment'])
 
-    # Process the probabilities to return the sentiment with the highest confidence
-    results = []
-    for i, comment in enumerate(comments):
-        max_prob = max(probabilities[i])
-        sentiment = "positive" if probabilities[i][2] == max_prob else "neutral" if probabilities[i][1] == max_prob else "negative"
-        results.append({
-            "comment": comment,
-            "sentiment": sentiment,
-            "confidence": round(max_prob * 100, 2)  # Return percentage confidence
-        })
+        # Analyze the comments using the pre-trained model and get probabilities
+        probabilities = model_pipeline.predict_proba(df['Cleaned_Comment'])
 
-    # Return the result as JSON
-    return jsonify(results)
+        # Process the probabilities to return the sentiment with the highest confidence
+        results = []
+        for i, comment in enumerate(comments):
+            prob = probabilities[i]
+            max_prob = max(prob)
+            sentiment = "positive" if prob[2] == max_prob else "neutral" if prob[1] == max_prob else "negative"
+            results.append({
+                "comment": comment,
+                "sentiment": sentiment,
+                "confidence": round(max_prob * 100, 2)  # Return percentage confidence
+            })
+
+        # Return the result as JSON
+        return jsonify(results)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# Custom error handler for 404 errors
+@app.errorhandler(404)
+def page_not_found(e):
+    return jsonify({"error": "Endpoint not found"}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)
