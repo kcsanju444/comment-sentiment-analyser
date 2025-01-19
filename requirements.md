@@ -9,3 +9,5 @@ pip install Flask-SQLAlchemy
 pip install PyMySQL
 
 pip install pandas
+
+pip install joblib
