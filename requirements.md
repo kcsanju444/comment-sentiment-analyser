@@ -7,3 +7,5 @@ pip install Flask-Cors
 pip install Flask-SQLAlchemy
 
 pip install PyMySQL
+
+pip install pandas
