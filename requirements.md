@@ -11,3 +11,5 @@ pip install PyMySQL
 pip install pandas
 
 pip install joblib
+
+pip install pymysql
