@@ -13,3 +13,5 @@ pip install pandas
 pip install joblib
 
 pip install pymysql
+
+pip install emoji
