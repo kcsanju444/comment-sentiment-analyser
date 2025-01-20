@@ -33,8 +33,8 @@ function HomeScreen() {
       {/* Title "Tube Sentment" */}
       <div className="absolute top-[11rem] left-1/3 transform -translate-x-1/2 text-center text-white">
         <h1 className="text-[4rem] font-bold">
-          <span style={{ color: "rgb(84,79,77)" }}>Tube</span>{" "}
-          <span style={{ color: "rgb(202,0,42)", ...bounceStyle }}>Sentiment</span>
+          <span style={{ color: "black" }}>Smart</span>
+          <span style={{ color: "rgb(202,0,42)", ...bounceStyle }}>Filter</span>
         </h1>
       </div>
 

@@ -1,13 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 const Signup = () => {
+  const location = useLocation(); // Access location for passed state
+  const navigate = useNavigate(); // For navigation
+
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(""); // State for email
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+
+  // Set email from location.state if passed
+  useEffect(() => {
+    if (location.state && location.state.email) {
+      setEmail(location.state.email);
+    }
+  }, [location.state]);
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -30,7 +40,6 @@ const Signup = () => {
   };
 
   return (
-    
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-5">
       <h2 className="text-2xl font-montserrat text-blue-500 mb-6">Signup</h2>
       <form
@@ -64,7 +73,7 @@ const Signup = () => {
           <input
             type="email"
             id="email"
-            value={email}
+            value={email} // Email pre-filled
             onChange={(e) => setEmail(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Enter your email"
@@ -89,12 +98,10 @@ const Signup = () => {
           />
         </div>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-        {message && (
-          <p className="text-green-500 text-center mb-4">{message}</p>
-        )}
+        {message && <p className="text-green-500 text-center mb-4">{message}</p>}
         <button
           type="submit"
-          className="w-full p-3 bg-[rgb(202,0,42)] text-white rounded-md hhover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+          className="w-full p-3 bg-[rgb(202,0,42)] text-white rounded-md hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
         >
           Signup
         </button>

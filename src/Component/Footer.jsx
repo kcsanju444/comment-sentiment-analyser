@@ -39,7 +39,7 @@ const Footer = () => {
       <br></br>
       <div style={containerStyle}>
         <p style={paragraphStyle} className="text-[10px]">
-          &copy; {new Date().getFullYear()} Comment Analyzer. All rights
+          &copy; {new Date().getFullYear()} Smart Filter. All rights
           reserved
         </p>
       </div>
