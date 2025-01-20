@@ -11,6 +11,13 @@ from flask_sqlalchemy import SQLAlchemy
 from auth import auth  # Import the auth blueprint
 from models import db  # Import db from models.py
 import os
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
+youtube_API_key = os.getenv('YOUTUBE_API_KEY')
+twitter_API_key = os.getenv('TWITTER_API_KEY')
 
 # Initialize Flask app and allow CORS
 app = Flask(__name__)
@@ -76,6 +83,43 @@ def fetch_youtube_comments(video_id, api_key):
 
     return comments
 
+def fetch_twitter_data(query, api_key):
+    headers = {
+        "Authorization": f"Bearer {api_key}"
+    }
+
+    url = "https://api.twitter.com/2/tweets/search/recent"
+    params = {
+        "query": query,  # The search query
+        "tweet.fields": "text",  # Specify that we only want the tweet text
+        "max_results": 100  # Maximum number of tweets to fetch per request
+    }
+
+    tweets = []
+    next_token = None
+
+    while True:
+        if next_token:
+            params["next_token"] = next_token
+
+        # Fetch tweets using the API
+        response = requests.get(url, headers=headers, params=params)
+        if response.status_code != 200:
+            raise Exception(f"Twitter API error: {response.status_code} {response.text}")
+
+        data = response.json()
+
+        # Append the tweets
+        for tweet in data.get("data", []):
+            tweets.append(tweet["text"])
+
+        # Check if there are more tweets to fetch
+        next_token = data.get("meta", {}).get("next_token")
+        if not next_token:
+            break
+
+    return tweets
+
 # Route for base URL
 @app.route('/')
 def index():
@@ -91,7 +135,7 @@ def analyze_comments():
         if not video_url:
             return jsonify({"error": "No video URL provided"}), 400
 
-        api_key = "AIzaSyBkDOktgIzT58-ti6246wit8elBOpt2kR4"  # Replace with your API key
+        api_key = youtube_API_key  # Replace with your API key
 
         # Extract video ID from YouTube URL
         video_id = video_url.split("v=")[-1]
@@ -127,6 +171,50 @@ def analyze_comments():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@app.route('/api/tweets', methods=['POST'])
+def analyze_tweets():
+    try:
+        # Get the request data from frontend
+        data = request.json
+        tweet_query = data.get('query')
+        if not tweet_query:
+            return jsonify({"error": "No query provided"}), 400
+
+        api_key = twitter_API_key  # Replace with your Twitter API Bearer Token
+
+        # Fetch tweets using Twitter API
+        tweets = fetch_twitter_data(tweet_query, api_key)
+        if not tweets:
+            return jsonify({"error": "No tweets found"}), 404
+
+        # Preprocess the tweets
+        cleaned_tweets = [preprocess_text(tweet) for tweet in tweets]
+
+        # Convert the cleaned tweets into a DataFrame for analysis
+        df = pd.DataFrame(cleaned_tweets, columns=['Cleaned_Tweet'])
+
+        # Analyze the tweets using the pre-trained model and get probabilities
+        probabilities = model_pipeline.predict_proba(df['Cleaned_Tweet'])
+
+        # Process the probabilities to return the sentiment with the highest confidence
+        results = []
+        for i, tweet in enumerate(tweets):
+            prob = probabilities[i]
+            max_prob = max(prob)
+            sentiment = "positive" if prob[2] == max_prob else "neutral" if prob[1] == max_prob else "negative"
+            results.append({
+                "tweet": tweet,
+                "sentiment": sentiment,
+                "confidence": round(max_prob * 100, 2)  # Return percentage confidence
+            })
+
+        # Return the result as JSON
+        return jsonify(results)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 # Custom error handler for 404 errors
 @app.errorhandler(404)
