@@ -49,7 +49,7 @@ function Navbar() {
             Analysis
           </button>
           {isDropdownOpen && (
-            <div className="absolute bg-white shadow-lg rounded mt-2 w-48 z-60">
+            <div className="absolute bg-white shadow-lg rounded mt-0 w-48 z-60">
               <ul className="list-none p-0">
                 <li>
                   <Link
@@ -73,8 +73,16 @@ function Navbar() {
         </div>
       </nav>
 
+
       <h1 className="font-montserrat text-tealish text-xl"></h1>
 
+      {/* Spam Detection */}
+      <Link to="/spamdetection">
+        <button className="bg-teal-500 text-white rounded hover:bg-teal-600 px-4 py-2">
+          Spam Detection
+        </button>
+      </Link>
+      
       {/* Profile Section */}
       {(user || admin) && (
         <>
@@ -119,13 +127,6 @@ function Navbar() {
           </button>
         </Link>
       )}
-
-      {/* New Link for Spam Detection */}
-      <Link to="/spamdetection">
-        <button className="bg-teal-500 text-white rounded hover:bg-teal-600 px-4 py-2">
-          Spam Detection
-        </button>
-      </Link>
     </div>
   );
 }
