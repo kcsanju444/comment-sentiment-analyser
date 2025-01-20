@@ -10,5 +10,6 @@ To run the backend code:
 #### Make sure to create:
 -.\backend\.env
 - Contents of .env:
-    YOUTUBE_API_KEY="api_key"
-    TWITTER_API_KEY="api_key"
+
+  YOUTUBE_API_KEY="api_key"
+  TWITTER_API_KEY="api_key"
