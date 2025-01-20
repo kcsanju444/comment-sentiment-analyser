@@ -10,6 +10,7 @@ import AboutUs from "./Component/AboutUs";
 import Faq from "./Component/Faq";
 import CommentAnalyzer from "./CommentAnalyzer/CommentAnalyzer";
 import TwitterAnalyzer from "./TwitterAnalyzer/TwitterAnalyzer";
+import SpamDetection from "./SpamDetection/SpamDetection";
 import Profile from "./Component/Profile";
 import Terms from "./Component/Terms";
 import Privacy from "./Component/Privacy";
@@ -35,6 +36,7 @@ function App() {
           {/* Other routes */}
           <Route path="/commentanalyzer" element={<CommentAnalyzer />} />
           <Route path="/twitteranalyer" element={<TwitterAnalyzer />} />
+          <Route path="/spamdetection" element={<SpamDetection />} />
           <Route path="/login" element={<Login />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/faq" element={<Faq />} />

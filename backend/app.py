@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import re
 import googleapiclient.discovery
 import re
 import joblib
@@ -19,6 +20,9 @@ load_dotenv()
 
 youtube_API_key = os.getenv('YOUTUBE_API_KEY')
 twitter_API_key = os.getenv('TWITTER_API_KEY')
+
+if not youtube_API_key or not twitter_API_key:
+    raise ValueError("API keys not found. Make sure your .env file contains YOUTUBE_API_KEY and TWITTER_API_KEY")
 
 # Initialize Flask app and allow CORS
 app = Flask(__name__)
@@ -46,14 +50,6 @@ if not os.path.exists(nltk_data_dir):
 # Load stopwords and lemmatizer
 stop_words = set(stopwords.words('english'))
 lemmatizer = WordNetLemmatizer()
-
-# Preprocess function to clean text
-def preprocess_text(text):
-    text = text.lower()  # Lowercase the text
-    text = re.sub(r'\d+', '', text)  # Remove numbers
-    text = re.sub(r'[^\w\s]', '', text)  # Remove punctuation
-    text = ' '.join([lemmatizer.lemmatize(word) for word in text.split() if word not in stop_words])  # Remove stopwords & lemmatize
-    return text
 
 # Fetch comments from YouTube using the YouTube Data API
 def fetch_youtube_comments(video_id, api_key):
@@ -264,6 +260,61 @@ def analyze_tweets():
 @app.errorhandler(404)
 def page_not_found(e):
     return jsonify({"error": "Endpoint not found"}), 404
+
+# Load the spam detection model (assuming it is saved as 'spam_model.pkl')
+spam_model = joblib.load('spam_model.pkl')
+
+nltk_data_dir = os.path.expanduser('~') + '/nltk_data'
+if not os.path.exists(nltk_data_dir):
+    nltk.download('stopwords')
+    nltk.download('wordnet')
+
+# Load stopwords and lemmatizer
+stop_words = set(stopwords.words('english'))
+lemmatizer = WordNetLemmatizer()
+
+# Preprocess function to clean the text
+def preprocess_text(text):
+    text = text.lower()  # Lowercase the text
+    text = re.sub(r'\d+', '', text)  # Remove numbers
+    text = re.sub(r'[^\w\s]', '', text)  # Remove punctuation
+    text = ' '.join([lemmatizer.lemmatize(word) for word in text.split() if word not in stop_words])  # Remove stopwords & lemmatize
+    return text
+
+# Load the pre-trained vectorizer (assumes it was saved alongside the model)
+vectorizer = joblib.load('vectorizer.pkl')
+
+# Route for spam detection
+@app.route('/api/spam', methods=['POST'])
+def detect_spam():
+    try:
+        data = request.json
+        message = data.get('message')
+        if not message:
+            return jsonify({"error": "No message provided"}), 400
+
+        # Preprocess the message
+        cleaned_message = preprocess_text(message)
+
+        # Transform the text into numeric form using the vectorizer
+        transformed_message = vectorizer.transform([cleaned_message])  # Returns a sparse matrix
+
+        # Predict spam or non-spam
+        prediction = spam_model.predict(transformed_message)
+        prediction_prob = spam_model.predict_proba(transformed_message)
+
+        # Assuming 0 is non-spam, 1 is spam
+        is_spam = bool(prediction[0] == 1)  # Explicitly cast to Python bool
+        confidence = float(max(prediction_prob[0]))  # Cast confidence to Python float
+
+        return jsonify({
+            "isSpam": is_spam,
+            "confidence": confidence
+        })
+
+    except Exception as e:
+        print(f"Error: {str(e)}")  # Log the error for debugging
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
