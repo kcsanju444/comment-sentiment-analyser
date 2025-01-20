@@ -12,6 +12,7 @@ from auth import auth  # Import the auth blueprint
 from models import db  # Import db from models.py
 import os
 import requests
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -83,43 +84,6 @@ def fetch_youtube_comments(video_id, api_key):
 
     return comments
 
-def fetch_twitter_data(query, api_key):
-    headers = {
-        "Authorization": f"Bearer {api_key}"
-    }
-
-    url = "https://api.twitter.com/2/tweets/search/recent"
-    params = {
-        "query": query,  # The search query
-        "tweet.fields": "text",  # Specify that we only want the tweet text
-        "max_results": 100  # Maximum number of tweets to fetch per request
-    }
-
-    tweets = []
-    next_token = None
-
-    while True:
-        if next_token:
-            params["next_token"] = next_token
-
-        # Fetch tweets using the API
-        response = requests.get(url, headers=headers, params=params)
-        if response.status_code != 200:
-            raise Exception(f"Twitter API error: {response.status_code} {response.text}")
-
-        data = response.json()
-
-        # Append the tweets
-        for tweet in data.get("data", []):
-            tweets.append(tweet["text"])
-
-        # Check if there are more tweets to fetch
-        next_token = data.get("meta", {}).get("next_token")
-        if not next_token:
-            break
-
-    return tweets
-
 # Route for base URL
 @app.route('/')
 def index():
@@ -172,32 +136,113 @@ def analyze_comments():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
+from datetime import datetime
+
+def fetch_twitter_data(query, api_key, max_results=10, max_retries=5):
+    headers = {
+        "Authorization": f"Bearer {api_key}"
+    }
+
+    url = "https://api.twitter.com/2/tweets/search/recent"
+    params = {
+        "query": query,
+        "tweet.fields": "text",
+        "max_results": max_results
+    }
+
+    tweets = []
+    next_token = None
+
+    for attempt in range(max_retries):
+        if next_token:
+            params["next_token"] = next_token
+
+        response = requests.get(url, headers=headers, params=params)
+        print(f"Attempt {attempt + 1}: Response status code {response.status_code}")
+
+        if response.status_code == 200:
+            data = response.json()
+
+            # Append tweets to the list
+            for tweet in data.get("data", []):
+                tweets.append(tweet["text"])
+
+            next_token = data.get("meta", {}).get("next_token")
+            if not next_token:
+                break
+
+        elif response.status_code == 429:  # Rate limit exceeded
+            retry_after = int(response.headers.get("x-rate-limit-reset", 60))  # Default to 60 seconds
+            print(f"Rate limit reached. Retrying after {retry_after} seconds...")
+            time.sleep(retry_after)
+
+        else:
+            print(f"Error Response: {response.status_code} {response.text}")
+            raise Exception(f"Twitter API error: {response.status_code} {response.text}")
+
+    if not tweets and response.status_code == 429:
+        print("Rate limit exceeded multiple times. Please try later.")
+        raise Exception("Rate limit exceeded. Please try again later.")
+
+    return tweets
+    
+def get_tweet_id(tweet_url):
+    match = re.search(r"status/(\d+)", tweet_url)
+    if match:
+        return match.group(1)
+    return None
+
+import time
+
+def fetch_tweet_by_id(tweet_id, api_key, max_retries=5):
+    headers = {
+        "Authorization": f"Bearer {api_key}"
+    }
+    url = f"https://api.twitter.com/2/tweets/{tweet_id}"
+    params = {
+        "tweet.fields": "text"
+    }
+
+    for attempt in range(max_retries):
+        response = requests.get(url, headers=headers, params=params)
+        print(f"Response Status: {response.status_code}, Attempt: {attempt + 1}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            return data.get("data", {}).get("text", None)
+
+        elif response.status_code == 429:
+            retry_after = int(response.headers.get("x-rate-limit-reset", 60))  # Fallback to 60 seconds if not provided
+            print(f"Rate limit reached. Retrying after {retry_after} seconds...")
+            time.sleep(retry_after)
+
+        else:
+            print(f"Error Response: {response.text}")
+            raise Exception(f"Twitter API error: {response.status_code} {response.text}")
+
+    raise Exception("Exceeded maximum retries due to rate limiting.")
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+
 @app.route('/api/tweets', methods=['POST'])
 def analyze_tweets():
     try:
-        # Get the request data from frontend
         data = request.json
-        tweet_query = data.get('query')
-        if not tweet_query:
+        query = data.get('query')
+
+        if not query:
             return jsonify({"error": "No query provided"}), 400
 
-        api_key = twitter_API_key  # Replace with your Twitter API Bearer Token
+        tweets = fetch_twitter_data(query, twitter_API_key)
 
-        # Fetch tweets using Twitter API
-        tweets = fetch_twitter_data(tweet_query, api_key)
         if not tweets:
             return jsonify({"error": "No tweets found"}), 404
 
-        # Preprocess the tweets
+        # Preprocess and analyze tweets
         cleaned_tweets = [preprocess_text(tweet) for tweet in tweets]
+        probabilities = model_pipeline.predict_proba(cleaned_tweets)
 
-        # Convert the cleaned tweets into a DataFrame for analysis
-        df = pd.DataFrame(cleaned_tweets, columns=['Cleaned_Tweet'])
-
-        # Analyze the tweets using the pre-trained model and get probabilities
-        probabilities = model_pipeline.predict_proba(df['Cleaned_Tweet'])
-
-        # Process the probabilities to return the sentiment with the highest confidence
         results = []
         for i, tweet in enumerate(tweets):
             prob = probabilities[i]
@@ -206,10 +251,9 @@ def analyze_tweets():
             results.append({
                 "tweet": tweet,
                 "sentiment": sentiment,
-                "confidence": round(max_prob * 100, 2)  # Return percentage confidence
+                "confidence": round(max_prob * 100, 2)
             })
 
-        # Return the result as JSON
         return jsonify(results)
 
     except Exception as e:
