@@ -53,7 +53,7 @@ function Navbar() {
               <ul className="list-none p-0">
                 <li>
                   <Link
-                    to="/twittercomment"
+                    to="/twitteranalyer"
                     className="block py-2 px-4 text-gray-800 hover:bg-gray-200"
                   >
                     Twitter Comment
