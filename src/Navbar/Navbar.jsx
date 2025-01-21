@@ -28,13 +28,13 @@ function Navbar() {
   };
 
   return (
-    <div className="flex justify-between items-center bg-slate-50 border-b border-gray-300 p-4 sticky top-0 z-50">
+    <div className="flex justify-between items-center bg-slate-50 border-b border-gray-300 p-3 sticky top-0 z-50">
       {/* Left Section: Logo and navigation buttons */}
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-3">
         {/* Logo linking to HomeScreen */}
         <nav>
           <Link to="/">
-            <img src={Logo} className="h-14" alt="logo" />
+            <img src={Logo} className="h-12" alt="logo" />
           </Link>
         </nav>
 
@@ -45,16 +45,16 @@ function Navbar() {
             onMouseEnter={handleDropdownEnter} // Show dropdown on hover
             onMouseLeave={handleDropdownLeave} // Hide dropdown when mouse leaves
           >
-            <button className="text-gray-800 font-semibold py-2 px-4 rounded inline-block">
+            <span className="text-black font-medium text-[1rem] py-1 px-3 rounded inline-block">
               Analysis
-            </button>
+            </span>
             {isDropdownOpen && (
               <div className="absolute bg-white shadow-lg rounded mt-0 w-48 z-60">
                 <ul className="list-none p-0">
                   <li>
                     <Link
                       to="/twitteranalyer"
-                      className="block py-2 px-4 text-gray-800 hover:bg-gray-200"
+                      className="block font-medium py-2 px-3 text-gray-800 hover:bg-gray-200"
                     >
                       Twitter Comment
                     </Link>
@@ -62,7 +62,7 @@ function Navbar() {
                   <li>
                     <Link
                       to="/commentanalyzer"
-                      className="block py-2 px-4 text-gray-800 hover:bg-gray-200"
+                      className="block py-2 font-medium px-3 text-gray-800 hover:bg-gray-200"
                     >
                       YouTube Comment
                     </Link>
@@ -74,10 +74,17 @@ function Navbar() {
         </nav>
 
         {/* Spam Detection */}
-        <Link to="/spamdetection">
-          <button className="bg-white text-black rounded hover:bg-teal-600 px-4 py-2">
-            Spam Detection
-          </button>
+        <Link
+          to="/spamdetection"
+          className="bg-transparent text-black ml-2 rounded font-medium text-[0.9rem] px-3 py-1"
+        >
+          Spam Detection
+        </Link>
+        <Link
+          to="/aboutus"
+          className="bg-transparent text-black rounded font-medium text-[0.9rem] px-3 py-1"
+        >
+          About us
         </Link>
       </div>
 
@@ -86,12 +93,12 @@ function Navbar() {
         {(user || admin) && (
           <>
             <CgProfile
-              className="h-6 w-6 mr-4 cursor-pointer"
+              className="h-6 w-6 mr-3 cursor-pointer"
               onClick={handleProfileClick} // Open/close overlay on click
             />
             {isOverlayOpen && (
               <div
-                className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-300 rounded shadow-lg z-50"
+                className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-300 rounded shadow-lg z-50"
                 onClick={handleOverlayClose} // Close overlay when clicked outside
               >
                 <div className="p-2 text-center">
@@ -116,10 +123,9 @@ function Navbar() {
         {!user && !admin && (
           <Link
             to={window.location.pathname.includes("/admin") ? "/admin/login" : "/login"}
-            className="text-tealish"
           >
             <button
-              className="bg-green-500 text-white rounded hover:bg-green-600 px-4 py-2"
+              className="bg-green-500 text-white rounded hover:bg-green-600 px-3 py-1"
               style={{ backgroundColor: "#CA002A" }}
             >
               Login
