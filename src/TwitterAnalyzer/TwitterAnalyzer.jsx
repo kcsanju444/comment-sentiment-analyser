@@ -47,17 +47,25 @@ const TwitterAnalyzer = () => {
   return (
     <div className="p-4 font-sans">
       <div className="mb-4 text-center mt-8">
+        {/* Display login message when user/admin is not logged in */}
+        {!user && !admin && (
+          <p className="text-red-500 mt-2">
+            Please log in to analyze tweets.
+          </p>
+        )}
+
         <input
           type="text"
           placeholder="Enter tweet URL or text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="border p-2 w-1/2 mr-2 rounded"
+          disabled={loading} // Disable input during loading
         />
         <button
           onClick={fetchTweetSentiment}
           className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          disabled={loading || (!user && !admin)}
+          disabled={loading || (!user && !admin)} // Disable button if loading or user isn't logged in
         >
           {loading ? "Analyzing..." : "Analyze Tweet"}
         </button>
@@ -77,7 +85,8 @@ const TwitterAnalyzer = () => {
             <strong>Tweet:</strong> {tweet}
           </p>
           <p className="mt-2 text-gray-700">
-            <strong>Sentiment:</strong> {sentiment.charAt(0).toUpperCase() + sentiment.slice(1)}
+            <strong>Sentiment:</strong>{" "}
+            {sentiment.charAt(0).toUpperCase() + sentiment.slice(1)}
           </p>
           <p className="mt-2 text-gray-700">
             <strong>Confidence:</strong> {confidence}%
