@@ -190,7 +190,7 @@ def get_tweet_id(tweet_url):
 
 import time
 
-def fetch_tweet_by_id(tweet_id, api_key, max_retries=5):
+def fetch_tweet_by_id(tweet_id, api_key, max_retries=2):
     headers = {
         "Authorization": f"Bearer {api_key}"
     }
