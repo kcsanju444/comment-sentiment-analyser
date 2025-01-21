@@ -1,7 +1,5 @@
-from flask import Flask, request, jsonify
 import re
 import googleapiclient.discovery
-import re
 import joblib
 import nltk
 from nltk.corpus import stopwords
@@ -9,24 +7,30 @@ from nltk.stem import WordNetLemmatizer
 import pandas as pd
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, request, jsonify
 from auth import auth  # Import the auth blueprint
 from models import db  # Import db from models.py
 import os
 import requests
 import logging
 from dotenv import load_dotenv
+from datetime import datetime
+import time
+
+# Toggle between mock mode and live API mode for testing and debugging
+USE_MOCK_DATA = False
 
 load_dotenv()
 
 youtube_API_key = os.getenv('YOUTUBE_API_KEY')
-twitter_API_key = os.getenv('TWITTER_API_KEY')
+twitter_bearer_token = os.getenv('TWITTER_BEARER_TOKEN')
 
-if not youtube_API_key or not twitter_API_key:
+if not youtube_API_key or not twitter_bearer_token:
     raise ValueError("API keys not found. Make sure your .env file contains YOUTUBE_API_KEY and TWITTER_API_KEY")
 
 # Initialize Flask app and allow CORS
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
+CORS(app)  # Allow all origins
 
 # App configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://user:12345@localhost/CommentAnalyzer'
@@ -38,18 +42,55 @@ db.init_app(app)
 # Register the auth blueprint
 app.register_blueprint(auth)
 
-# Load the trained sentiment analysis model
-model_pipeline = joblib.load('sentiment_model.pkl')
+# Initialize logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler(), logging.FileHandler("app.log")]
+)
 
-# Pre-download NLTK resources if not already available
+# Load environment variables
+twitter_bearer_token = os.getenv('TWITTER_BEARER_TOKEN')
+
+if not twitter_bearer_token:
+    logging.error("Twitter API key not found. Make sure your .env file contains TWITTER_BEARER_TOKEN.")
+    raise ValueError("Twitter API key not found.")
+
+# Load the trained sentiment analysis model
+try:
+    model_pipeline = joblib.load('sentiment_model.pkl')
+    logging.info("Sentiment model loaded successfully.")
+except FileNotFoundError:
+    logging.error("Sentiment model file not found. Ensure 'sentiment_model.pkl' is in the correct path.")
+    raise Exception("Sentiment model file not found.")
+
+# Pre-download NLTK resources
 nltk_data_dir = os.path.expanduser('~') + '/nltk_data'
 if not os.path.exists(nltk_data_dir):
-    nltk.download('stopwords')
-    nltk.download('wordnet')
+    os.makedirs(nltk_data_dir, exist_ok=True)
+    nltk.download('stopwords', download_dir=nltk_data_dir)
+    nltk.download('wordnet', download_dir=nltk_data_dir)
+
+nltk.data.path.append(nltk_data_dir)
 
 # Load stopwords and lemmatizer
 stop_words = set(stopwords.words('english'))
 lemmatizer = WordNetLemmatizer()
+
+# Preprocess function to clean the text
+def preprocess_text(text):
+    if not text:
+        return ""
+    try:
+        text = text.lower()  # Lowercase the text
+        text = re.sub(r'\d+', '', text)  # Remove numbers
+        text = re.sub(r'[^\w\s]', '', text)  # Remove punctuation
+        text = ' '.join([lemmatizer.lemmatize(word) for word in text.split() if word not in stop_words])  # Remove stopwords & lemmatize
+        return text
+    except Exception as e:
+        logging.error(f"Error during text preprocessing: {e}")
+        return ""
+
 
 # Fetch comments from YouTube using the YouTube Data API
 def fetch_youtube_comments(video_id, api_key):
@@ -79,11 +120,6 @@ def fetch_youtube_comments(video_id, api_key):
             break
 
     return comments
-
-# Route for base URL
-@app.route('/')
-def index():
-    return "API for YouTube Comment Analysis is running."
 
 # Route for receiving the video URL and processing the comments
 @app.route('/api/comments', methods=['POST'])
@@ -131,158 +167,117 @@ def analyze_comments():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
-from datetime import datetime
-
-def fetch_twitter_data(query, api_key, max_results=10, max_retries=5):
-    headers = {
-        "Authorization": f"Bearer {api_key}"
-    }
-
-    url = "https://api.twitter.com/2/tweets/search/recent"
-    params = {
-        "query": query,
-        "tweet.fields": "text",
-        "max_results": max_results
-    }
-
-    tweets = []
-    next_token = None
-
-    for attempt in range(max_retries):
-        if next_token:
-            params["next_token"] = next_token
-
-        response = requests.get(url, headers=headers, params=params)
-        print(f"Attempt {attempt + 1}: Response status code {response.status_code}")
-
-        if response.status_code == 200:
-            data = response.json()
-
-            # Append tweets to the list
-            for tweet in data.get("data", []):
-                tweets.append(tweet["text"])
-
-            next_token = data.get("meta", {}).get("next_token")
-            if not next_token:
-                break
-
-        elif response.status_code == 429:  # Rate limit exceeded
-            retry_after = int(response.headers.get("x-rate-limit-reset", 60))  # Default to 60 seconds
-            print(f"Rate limit reached. Retrying after {retry_after} seconds...")
-            time.sleep(retry_after)
-
-        else:
-            print(f"Error Response: {response.status_code} {response.text}")
-            raise Exception(f"Twitter API error: {response.status_code} {response.text}")
-
-    if not tweets and response.status_code == 429:
-        print("Rate limit exceeded multiple times. Please try later.")
-        raise Exception("Rate limit exceeded. Please try again later.")
-
-    return tweets
-    
-def get_tweet_id(tweet_url):
-    match = re.search(r"status/(\d+)", tweet_url)
-    if match:
-        return match.group(1)
-    return None
-
-import time
-
-def fetch_tweet_by_id(tweet_id, api_key, max_retries=2):
-    headers = {
-        "Authorization": f"Bearer {api_key}"
-    }
-    url = f"https://api.twitter.com/2/tweets/{tweet_id}"
-    params = {
-        "tweet.fields": "text"
-    }
-
-    for attempt in range(max_retries):
-        response = requests.get(url, headers=headers, params=params)
-        print(f"Response Status: {response.status_code}, Attempt: {attempt + 1}")
-        
-        if response.status_code == 200:
-            data = response.json()
-            return data.get("data", {}).get("text", None)
-
-        elif response.status_code == 429:
-            retry_after = int(response.headers.get("x-rate-limit-reset", 60))  # Fallback to 60 seconds if not provided
-            print(f"Rate limit reached. Retrying after {retry_after} seconds...")
-            time.sleep(retry_after)
-
-        else:
-            print(f"Error Response: {response.text}")
-            raise Exception(f"Twitter API error: {response.status_code} {response.text}")
-
-    raise Exception("Exceeded maximum retries due to rate limiting.")
-
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
-
-@app.route('/api/tweets', methods=['POST'])
-def analyze_tweets():
-    try:
-        data = request.json
-        query = data.get('query')
-
-        if not query:
-            return jsonify({"error": "No query provided"}), 400
-
-        tweets = fetch_twitter_data(query, twitter_API_key)
-
-        if not tweets:
-            return jsonify({"error": "No tweets found"}), 404
-
-        # Preprocess and analyze tweets
-        cleaned_tweets = [preprocess_text(tweet) for tweet in tweets]
-        probabilities = model_pipeline.predict_proba(cleaned_tweets)
-
-        results = []
-        for i, tweet in enumerate(tweets):
-            prob = probabilities[i]
-            max_prob = max(prob)
-            sentiment = "positive" if prob[2] == max_prob else "neutral" if prob[1] == max_prob else "negative"
-            results.append({
-                "tweet": tweet,
-                "sentiment": sentiment,
-                "confidence": round(max_prob * 100, 2)
-            })
-
-        return jsonify(results)
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-# Custom error handler for 404 errors
-@app.errorhandler(404)
-def page_not_found(e):
-    return jsonify({"error": "Endpoint not found"}), 404
-
-# Load the spam detection model (assuming it is saved as 'spam_model.pkl')
-spam_model = joblib.load('spam_model.pkl')
-
-nltk_data_dir = os.path.expanduser('~') + '/nltk_data'
-if not os.path.exists(nltk_data_dir):
-    nltk.download('stopwords')
-    nltk.download('wordnet')
 
 # Load stopwords and lemmatizer
 stop_words = set(stopwords.words('english'))
 lemmatizer = WordNetLemmatizer()
 
-# Preprocess function to clean the text
-def preprocess_text(text):
-    text = text.lower()  # Lowercase the text
-    text = re.sub(r'\d+', '', text)  # Remove numbers
-    text = re.sub(r'[^\w\s]', '', text)  # Remove punctuation
-    text = ' '.join([lemmatizer.lemmatize(word) for word in text.split() if word not in stop_words])  # Remove stopwords & lemmatize
-    return text
+# Cache for storing fetched tweets to reduce API calls
+tweet_cache = {}
 
-# Load the pre-trained vectorizer (assumes it was saved alongside the model)
-vectorizer = joblib.load('vectorizer.pkl')
+# Extract the tweet ID from a URL
+def extract_tweet_id(url):
+    match = re.search(r"status/(\d+)", url)
+    return match.group(1) if match else None
+
+# Mock tweet data for testing
+mock_tweet_data = {
+    "1453489038376132610": "Just watched an incredible sunset over the mountains! #blessed",
+    "1453489123947812874": "Excited for the big game tonight. Let’s go, team! 🏈 #GameDay",
+    "1453489231094845442": "Looking for book recommendations—what’s everyone reading these days? 📚",
+}
+
+# Fetch a single tweet by ID with rate limit handling and caching
+def fetch_tweet_by_id(tweet_id, api_key):
+    if USE_MOCK_DATA:
+        # Mock data logic
+        if tweet_id in mock_tweet_data:
+            logging.info(f"Using mock data for tweet ID: {tweet_id}")
+            return mock_tweet_data[tweet_id]
+        logging.warning(f"Tweet ID {tweet_id} not found in mock data.")
+        return None
+    else:
+        # Cache and API call logic
+        if tweet_id in tweet_cache:
+            logging.info(f"Tweet found in cache: {tweet_id}")
+            return tweet_cache[tweet_id]
+
+        headers = {"Authorization": f"Bearer {api_key}"}
+        url = f"https://api.twitter.com/2/tweets/{tweet_id}"
+
+        try:
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                tweet_text = data.get("data", {}).get("text")
+                tweet_cache[tweet_id] = tweet_text
+                return tweet_text
+            elif response.status_code == 429:
+                retry_after = int(response.headers.get("x-rate-limit-reset", time.time() + 60)) - int(time.time())
+                logging.warning(f"Rate limit exceeded. Retrying after {retry_after} seconds.")
+                time.sleep(max(retry_after, 1))
+            else:
+                logging.error(f"Failed to fetch tweet by ID {tweet_id}. Status code: {response.status_code}")
+        except Exception as e:
+            logging.error(f"Error fetching tweet by ID {tweet_id}: {e}")
+        return None
+
+
+# Route to analyze a single tweet
+@app.route('/api/tweets', methods=['POST'])
+def analyze_tweet():
+    try:
+        data = request.json
+        query = data.get('query')
+
+        if not query:
+            logging.error("Query validation failed: No query provided in the request.")
+            return jsonify({"error": "No query provided"}), 400
+
+        # Check if the query is a URL and extract the tweet ID
+        if query.startswith("http") and "status" in query:
+            tweet_id = extract_tweet_id(query)
+            if not tweet_id:
+                logging.error(f"Invalid Twitter URL provided: {query}")
+                return jsonify({"error": "Invalid Twitter URL format"}), 400
+
+            # Fetch the tweet by ID
+            tweet = fetch_tweet_by_id(tweet_id, twitter_bearer_token)
+            if not tweet:
+                logging.info(f"No tweet found for ID: {tweet_id}")
+                return jsonify({"error": "Tweet not found"}), 404
+        else:
+            # Treat the query as raw tweet text
+            tweet = query
+
+        # Process and analyze the single tweet
+        cleaned_tweet = preprocess_text(tweet)
+        probabilities = model_pipeline.predict_proba([cleaned_tweet])[0]
+        max_prob = max(probabilities)
+        sentiment = "positive" if probabilities[2] == max_prob else "neutral" if probabilities[1] == max_prob else "negative"
+
+        result = {
+            "tweet": tweet,
+            "sentiment": sentiment,
+            "confidence": round(max_prob * 100, 2)
+        }
+
+        logging.info(f"Sentiment analysis completed.")
+        return jsonify(result)
+
+    except Exception as e:
+        logging.error(f"Error in /api/tweets route: {e}")
+        return jsonify({"error": str(e)}), 500
+ 
+try:   
+    # Load the pre-trained vectorizer (assumes it was saved alongside the model)
+    vectorizer = joblib.load('vectorizer.pkl')
+
+    # Load the pre-trained spam detection model
+    spam_model = joblib.load('spam_model.pkl')
+except:
+    logging.error("Error loading spam detection model. Make sure 'vectorizer.pkl' and 'spam_model.pkl' are in the correct path.")
+    raise Exception("Error loading spam detection model.")
 
 # Route for spam detection
 @app.route('/api/spam', methods=['POST'])
@@ -315,6 +310,11 @@ def detect_spam():
     except Exception as e:
         print(f"Error: {str(e)}")  # Log the error for debugging
         return jsonify({"error": str(e)}), 500
+    
+# Route for base URL
+@app.route('/')
+def index():
+    return "API for YouTube Comment Analysis is running."
 
 if __name__ == '__main__':
     app.run(debug=True)

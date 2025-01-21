@@ -25,3 +25,4 @@ dist-ssr
 
 # API key file
 backend/.env
+backend/__pycache__
