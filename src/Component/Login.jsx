@@ -3,7 +3,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { useAuth } from "./../AuthContext"; // Import your AuthContext
-
+import login from "../assets/login.png";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,9 +34,14 @@ const Login = () => {
   };
 
   return (
-    <div className="flex justify-center min-h-screen-100 bg-gray-100 p-5">
-      <div className="w-full max-w-sm p-8 mt-10 bg-white border border-gray-300 rounded-lg shadow-md">
-        <h2 className="text-2xl font-montserrat text-blue-500 text-center mb-6">
+    <div className="relative min-h-screen flex items-center justify-center bg-gray-100 p-5">
+       <img
+              src={login}
+              alt=" login"
+              className="w-[30rem] mt-[2.5rem] h-[26.1rem] max-w-[98%] object-cover shadow-md"
+            />
+      <div className="w-full max-w-sm p-9 pr-[3rem] mt-10 bg-white pb-[2.1rem]   shadow-md">
+        <h2 className="text-2xl font-bold ml-[7rem] text-[2rem] text-[rgb(202,0,42)] mb-6">
           Login
         </h2>
         <form className="flex flex-col" onSubmit={handleLogin}>
