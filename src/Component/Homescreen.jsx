@@ -65,7 +65,7 @@ function HomeScreen() {
         <div className="w-1/2">
           <video
             className="w-[350rem] max-w-[98%] object-cover"
-            src={video}
+            src={video} 
             autoPlay
             loop
             muted

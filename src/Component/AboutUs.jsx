@@ -7,7 +7,7 @@ function AboutUs() {
     style={{
        // Lighter red with 60% opacity
     }}>
-      <div className="bg-red-600 h-[10rem] w-full">
+      <div className="bg-[rgb(202,0,42)] h-[10rem] w-full">
         <span></span>
         <br></br>
         <h1 className=" ml-[50rem]  font-bold text-[2rem] text-white ">About Us</h1>
@@ -32,20 +32,9 @@ function AboutUs() {
                    we aim to transform the overwhelming influx of comments into a manageable and insightful resource, helping you foster stronger
                     connections and create impactful conversations across social platforms.
 </span>
-<br></br><br></br>
-<div className="flex ">
-  <div><span className="font-bold text-[1rem] text-[rgb(202,0,42)] ">S</span><span className="mt-[1.1rem]">entiment</span>
-  <br></br>
-<span className="font-bold text-[1rem] text-[rgb(202,0,42)] ">M</span><span className="mt-[1.1rem]">onitoring</span>
-<br></br>
-<span className="font-bold text-[1rem] text-[rgb(202,0,42)] ">A</span><span className="mt-[1.1rem]">entiment</span>
-<br></br>
-<span className="font-bold text-[1rem] text-[rgb(202,0,42)] ">R</span><span className="mt-[1.1rem]">entiment</span>
-<br></br>
-<span className="font-bold text-[1rem] text-[rgb(202,0,42)] ">T</span><span className="mt-[1.1rem]">entiment</span> </div>
-</div>
-<div className="mb-[10rem] ">   
-           <img src={aboutus} alt="about" className="h-[20rem]  w-30%  mr-[40px]  ml-[2rem]  " />
+
+<div className="  ">   
+           <img src={aboutus} alt="about" className="h-[35rem]  w-[40rem]   " />
 </div>
 </div>
         </div>

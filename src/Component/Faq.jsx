@@ -23,11 +23,11 @@ const FAQPage = () => {
           className="w-full text-left text-xl font-semibold py-2 px-4 bg-gray-200 rounded-lg focus:outline-none"
           onClick={() => toggleFAQ(0)}
         >
-          What is YouTube Comment Analyzer?
+          What is SmartFilter?
         </button>
         {activeFAQ === 0 && (
           <div className="mt-2 px-4 text-gray-700">
-            YouTube Comment Analyzer is a tool that allows users to analyze and gain insights from YouTube video comments. It uses sentiment analysis to categorize comments as positive, negative, or neutral.
+            SmartFilter is an advanced tool designed to analyze and extract valuable insights from social media interactions. By leveraging sentiment analysis, SmartFilter categorizes comments and messages from platforms like YouTube and Twitter into positive, negative, or neutral, helping businesses and individuals make data-driven decisions.
           </div>
         )}
       </div>
@@ -38,11 +38,11 @@ const FAQPage = () => {
           className="w-full text-left text-xl font-semibold py-2 px-4 bg-gray-200 rounded-lg focus:outline-none"
           onClick={() => toggleFAQ(1)}
         >
-          How do I use YouTube Comment Analyzer?
+          How does SmartFilter work?
         </button>
         {activeFAQ === 1 && (
           <div className="mt-2 px-4 text-gray-700">
-            To use the YouTube Comment Analyzer, simply sign up or log in to your account, input a YouTube video URL, and let the tool analyze the comments. You will receive sentiment data about the comments for better understanding.
+            SmartFilter uses AI-powered sentiment analysis to scan and categorize the vast volume of comments, reactions, and messages across platforms like YouTube and Twitter. It processes the text data and classifies it based on sentiment, offering insights into public perception and trends.
           </div>
         )}
       </div>
@@ -53,11 +53,11 @@ const FAQPage = () => {
           className="w-full text-left text-xl font-semibold py-2 px-4 bg-gray-200 rounded-lg focus:outline-none"
           onClick={() => toggleFAQ(2)}
         >
-          Do I need to create an account?
+          What platforms does SmartFilter support?
         </button>
         {activeFAQ === 2 && (
           <div className="mt-2 px-4 text-gray-700">
-            Yes, you need to create an account to access all features of YouTube Comment Analyzer. However, you can explore limited features without signing up.
+            Currently, SmartFilter supports YouTube and Twitter. We are working to expand the platform compatibility in the future.
           </div>
         )}
       </div>
@@ -68,11 +68,11 @@ const FAQPage = () => {
           className="w-full text-left text-xl font-semibold py-2 px-4 bg-gray-200 rounded-lg focus:outline-none"
           onClick={() => toggleFAQ(3)}
         >
-          Is my data safe?
+          Do I need an account to use SmartFilter?
         </button>
         {activeFAQ === 3 && (
           <div className="mt-2 px-4 text-gray-700">
-            Yes, your data is safe. We adhere to strict privacy policies and never share or sell your personal information. Please read our Privacy Policy for more details.
+            Yes, to access all of SmartFilter's features, you need to create an account. This helps us provide a personalized experience and securely store your analysis results.
           </div>
         )}
       </div>
@@ -83,11 +83,11 @@ const FAQPage = () => {
           className="w-full text-left text-xl font-semibold py-2 px-4 bg-gray-200 rounded-lg focus:outline-none"
           onClick={() => toggleFAQ(4)}
         >
-          What types of comments can I analyze?
+          How can I analyze comments from a specific video or post?
         </button>
         {activeFAQ === 4 && (
           <div className="mt-2 px-4 text-gray-700">
-            You can analyze comments from any public YouTube video. The tool will analyze the text of the comments and provide insights based on sentiment.
+            Simply log in to your account, input the URL of the YouTube video or Twitter post you wish to analyze, and SmartFilter will process the comments for sentiment analysis.
           </div>
         )}
       </div>
@@ -98,11 +98,11 @@ const FAQPage = () => {
           className="w-full text-left text-xl font-semibold py-2 px-4 bg-gray-200 rounded-lg focus:outline-none"
           onClick={() => toggleFAQ(5)}
         >
-          How accurate is the sentiment analysis?
+          How accurate is SmartFilter's sentiment analysis?
         </button>
         {activeFAQ === 5 && (
           <div className="mt-2 px-4 text-gray-700">
-            The sentiment analysis is based on an AI algorithm that processes the comments and categorizes them as positive, negative, or neutral. While the algorithm is fairly accurate, it is not perfect and may occasionally misinterpret some comments.
+            SmartFilter's sentiment analysis is powered by AI algorithms that provide highly accurate sentiment categorizations. While it is generally reliable, the AI may occasionally misinterpret certain comments, especially if they contain sarcasm or complex expressions.
           </div>
         )}
       </div>
@@ -113,11 +113,11 @@ const FAQPage = () => {
           className="w-full text-left text-xl font-semibold py-2 px-4 bg-gray-200 rounded-lg focus:outline-none"
           onClick={() => toggleFAQ(6)}
         >
-          Can I use this tool for videos other than YouTube?
+          Can I use SmartFilter for other social media platforms?
         </button>
         {activeFAQ === 6 && (
           <div className="mt-2 px-4 text-gray-700">
-            Currently, YouTube Comment Analyzer only supports YouTube videos. We may expand to other platforms in the future, but for now, we focus on YouTube.
+            At the moment, SmartFilter is designed specifically for YouTube and Twitter. However, we plan to integrate more platforms in the future to provide a broader analysis scope.
           </div>
         )}
       </div>
@@ -128,11 +128,11 @@ const FAQPage = () => {
           className="w-full text-left text-xl font-semibold py-2 px-4 bg-gray-200 rounded-lg focus:outline-none"
           onClick={() => toggleFAQ(7)}
         >
-          How can I contact support?
+          How can SmartFilter help businesses and individuals?
         </button>
         {activeFAQ === 7 && (
           <div className="mt-2 px-4 text-gray-700">
-            If you need help or have any questions, you can contact our support team by emailing [your support email address].
+            SmartFilter provides valuable insights into public sentiment, enabling businesses to track brand perception, evaluate audience reactions, and optimize their marketing strategies. Individuals can use it to gauge the overall mood around a particular topic or trend.
           </div>
         )}
       </div>
@@ -143,11 +143,26 @@ const FAQPage = () => {
           className="w-full text-left text-xl font-semibold py-2 px-4 bg-gray-200 rounded-lg focus:outline-none"
           onClick={() => toggleFAQ(8)}
         >
-          Is this tool free to use?
+          Is SmartFilter free to use?
         </button>
         {activeFAQ === 8 && (
           <div className="mt-2 px-4 text-gray-700">
-            Yes, YouTube Comment Analyzer is free to use for basic features. However, some advanced features may require a paid subscription.
+            SmartFilter offers both free and paid versions. The free version provides access to basic sentiment analysis features, while the paid version unlocks advanced functionalities like detailed analytics and multi-platform support.
+          </div>
+        )}
+      </div>
+
+      {/* FAQ 10 */}
+      <div className="mb-4">
+        <button
+          className="w-full text-left text-xl font-semibold py-2 px-4 bg-gray-200 rounded-lg focus:outline-none"
+          onClick={() => toggleFAQ(9)}
+        >
+          How can I contact SmartFilter support?
+        </button>
+        {activeFAQ === 9 && (
+          <div className="mt-2 px-4 text-gray-700">
+            If you have any issues or questions, you can reach out to our support team by emailing [support email address] or using the contact form on our website.
           </div>
         )}
       </div>
