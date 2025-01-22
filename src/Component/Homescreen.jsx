@@ -86,7 +86,7 @@ function HomeScreen() {
             onClick={goToSignup}
             className="w-64 px-8 py-3 mt-[2rem] ml-[4rem] bg-green-500 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
           >
-            Enjoy TubeSentiment Now
+            Enjoy SmartFilter Now
           </button>
         </div>
       </div>
